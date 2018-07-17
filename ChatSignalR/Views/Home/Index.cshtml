@@ -1,0 +1,61 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<br /> 
+<br />
+<div class="container">
+    <div class="row">
+        <div class="col-lg-12">
+            <input type="text" class="form-control" id="message" />
+        </div>    
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <input type="text" class="btn btn-success" id="sendmessage" value="Enviar"/>
+        </div>
+    </div>
+    <h3>Mensaje</h3>
+    <br />
+    <div class="row">
+        <ul id="discussion"></ul>
+    </div>
+</div>
+
+<input type="hidden"id="displayname" />
+
+@section scripts{
+    <script src="~/Scripts/jquery.signalR-2.3.0.min.js"></script>
+    <script src="/signalr/hubs"></script>
+    <script type="text/javascript">
+        $(function () {
+            var chat = $.connection.chatHub;
+
+            chat.client.sendChat = function (name, message) {
+                var divName = name;
+                var divMessage = $("<div />").text(message).html();
+                var dt = new Date();
+                var time = dt.getHours() + ":" + dt.getMinutes() + ":" + dt.getSeconds();
+
+                $("#discussion").append("<li><em>" + time + "</em>  <strong>" + divName + "</strong> : " + divMessage + "</li>")
+           
+            };
+
+            var nameOwner = prompt("Escribe tu nombre: ", "");
+            $("#displayname").val(nameOwner);
+
+            $("message").focus();
+
+            $.connection.hub.start().done(function () {
+                $("#sendmessage").click(function () {
+                    var nameOwner = $("#displayname").val();
+                    var messageText = $("#message").val();
+
+                    chat.server.send(nameOwner, messageText); //el metodo que hicimos en ChatHub
+
+                    $("#message").val("").focus();
+                })
+            })
+        })
+    </script>
+}
